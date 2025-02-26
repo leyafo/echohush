@@ -9,7 +9,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS diary_fts USING fts5(
     entry, 
     content='diary', 
     content_rowid='id',
-    tokenize='unicode61' 
+    tokenize='simple 0' 
 );
 
 CREATE TRIGGER IF NOT EXISTS diary_ai AFTER INSERT ON diary

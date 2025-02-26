@@ -4,6 +4,8 @@ import {db} from '../models';
 
 export function AssignDiaryTag(arg1:db.AssignDiaryTagParams):Promise<db.Tag>;
 
+export function FtsDiarySearch(arg1:string):Promise<Array<db.Diary>>;
+
 export function GetAllDiaries():Promise<Array<db.Diary>>;
 
 export function GetAllDiariesLimit(arg1:db.GetAllDiariesLimitParams):Promise<Array<db.Diary>>;

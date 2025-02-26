@@ -12,6 +12,10 @@ func (fq *FrontQuery) AssignDiaryTag(arg2 AssignDiaryTagParams) (Tag, error) {
 	return fq.Q.AssignDiaryTag(context.Background(), arg2)
 }
 
+func (fq *FrontQuery) FtsDiarySearch(arg2 string) ([]Diary, error) {
+	return fq.Q.FtsDiarySearch(context.Background(), arg2)
+}
+
 func (fq *FrontQuery) GetAllDiaries() ([]Diary, error) {
 	return fq.Q.GetAllDiaries(context.Background())
 }

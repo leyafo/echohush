@@ -28,14 +28,28 @@ export default class extends Controller {
             id: 'authentication-modal',
             override: true
         };
+        this.modal = new Modal(this.modalTarget, options, instanceOptions);
+
         this.diaryPathTarget.value = await GetDBPath()
         this.isDev = await IsDev()
-        if(this.isDev){
-            this.passwordTarget.value="hello world"
-        }
 
-        this.modal = new Modal(this.modalTarget, options, instanceOptions);
-        this.modal.show();
+        if(this.isDev){
+            let self =this
+            this.passwordTarget.value="hello world"
+            OpenDB(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
+                self.listOutlet.loadDiaryList();
+                self.listOutlet.focus();
+                self.modal.hide();
+            }).catch((err)=>{
+                self.modal.show();
+                self.alertTarget.textContent = err;
+                self.alertTarget.classList.remove("hidden");
+                self.passwordTarget.classList.add("border-red-600");
+                console.error(err)
+            });
+        }else{
+            this.modal.show();
+        }
     }
 
     async fileChoose(e){
@@ -49,6 +63,7 @@ export default class extends Controller {
         e.preventDefault()
         OpenDB(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
             self.listOutlet.loadDiaryList();
+            self.listOutlet.focus();
             self.modal.hide();
         }).catch((err)=>{
             self.alertTarget.textContent = err;

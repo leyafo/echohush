@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>echohush</title>
+</head>
+
+<body class="bg-gray-800 font-mono">  
+    <main>
+        <div data-controller="search" class="flex mb-1">
+            <input data-action="input->search#performSearch compositionend->search#performSearch" data-search-target="input" class="w-full bg-gray-900 text-gray-200 rounded py-3 ps-4 pe-9 block border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" placeholder="search here"></input>
+            <div class="z-50 w-full max-h-72 p-1 bg-white border border-gray-200 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 hidden">
+                <div class="py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100" tabindex="1">
+                    <div class="flex justify-between items-center w-full">
+                        <span>Argentina</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-row h-screen" >
+            <div class="basis-1/5 bg-white text-gray-900 flex-shrink-0 overflow-x-hidden">  
+                <div id="list" data-controller="list" data-list-editor-outlet="#editor"  data-list-selected-class="bg-gray-300" class="h-full flex flex-col ">
+                    <template data-list-target="itemTemplate">
+                        <div data-list-target="item" data-action="click->list#itemSelected"  class="flex gap-4 items-start hover:bg-gray-300">
+                            <div class="md:text-wrap">
+                                <span class="id-span hidden"></span>
+                                <h3 class="create-time font-semibold text-xl"></h3>
+                                <p class="mt-1 text-gray-500 truncate"></p>
+                                <span class="update-time text-indigo-300"></span>
+                            </div>
+                        </div>
+                    </template>
+                    <div data-list-target="list" tabindex="0" data-action="keydown->list#keydown" class="h-full overflow-y-smooth overflow-x-hidden">  
+                    </div>
+                </div>
+            </div>
+            <div class="basis-4/5 text-gray-200 bg-white flex-shrink-0">  
+                <div data-controller="editor" data-editor-list-outlet="#list" id="editor" class="w-full h-screen border border-gray-500 rounded mb-2">
+                    <div data-editor-target="container" class="editor text-black"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div data-controller="authentication" data-authentication-list-outlet="#list">
+    <div data-authentication-target="modal" id="authentication-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Open Your Diary
+                    </h3>
+                </div>
+                <div class="p-4 md:p-5">
+                    <form data-action="submit->authentication#submit" class="space-y-4" action="#">
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="file_input">Diary Path</label>
+                            <input data-action="click->authentication#fileChoose" data-authentication-target="diaryPath" class="block mb-2 w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="file_input" type="text"  placeholder="No file selected" readonly>
+
+                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
+                            <input data-action="keydown.enter->authentication#submit" data-authentication-target="password" type="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required />
+                            <span data-authentication-target="alert" class="hidden text-red-600"></span>
+                        </div>
+                        <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Open Your Diary</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+
+<script src="./src/app.js" type="module"></script>
+</html>

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import {timeAgo} from "../helpers/index.js"
-import * as Query from "../../wailsjs/go/db/FrontQuery.js";
-import {db} from "../../wailsjs/go/models.js";
+import * as Query from "../../wailsjs/go/db/FrontQuery";
+import {db} from "../../wailsjs/go/models";
 
 const highlightUp = 1
 const highlightDown = 2
@@ -9,50 +9,58 @@ const listInsertAfterLast = 1
 const listInsertBeforeFirst = 2
 
 export default class extends Controller {
-    static targets = ["itemTemplate", "item", "list"]
-    static outlets = ["editor"]
+    static targets = ["itemTemplate", "item", "list", "search"]
+    static outlets = ["editor", "search"]
     static classes = ["selected"]
 
     async connect(){
-        let self = this
         this.offset = 0 // 追踪已加载的数据偏移量
-        this.limit = 40 // 每批加载的条目数量
+        this.limit = 20 // 每批加载的条目数量
         this.isLoading = false // 防止重复加载
 
         this.selectedItem = null
 
-        Query.GetDiariesCount().then((count)=>{
-            self.totalCount = count
-        })
-
-        // 监听滚动事件
-        //this.listTarget.addEventListener("scroll", this.handleScroll.bind(this))
+        this.listTarget.addEventListener("scroll", this.handleScroll.bind(this))
     }
 
-
-    async loadDiaryList(){
+    async loadDiaryList(direction){
+        if(!direction){
+            direction = listInsertAfterLast
+        }
+        if(!this.totalCount){
+            this.totalCount = await Query.GetDiariesCount()
+        }
         if(this.offset >= this.totalCount){
             return
         }
         const limitation = new db.GetAllDiariesLimitParams({ Limit: this.limit, Offset: this.offset })
         try {
-            const entries = await Query.GetAllDiariesLimit(limitation)
+            let lastItem = this.listTarget.lastElementChild
+            if(lastItem){
+                lastItem.classList.remove("end")
+            }
+            const entries = await Query.GetAllDiariesLimit(limitation) 
             for (let entry of entries) {
-                this.createNewItem(entry)
+                this.addNewItem(entry, direction)
             }
             this.offset += entries.length // 更新偏移量
+            lastItem = this.listTarget.lastElementChild
+            if(lastItem){
+                lastItem.classList.add("end")
+            }
+            if(!this.selectedItem){
+                this.highlightItem(this.listTarget.firstElementChild);
+            }
         } catch (error) {
             console.error("加载日记列表失败:", error)
         }
     }
 
-    // 加载更多数据
     async loadMoreDiaryList() {
         if (this.isLoading) return // 防止重复加载
         this.isLoading = true
         await this.loadDiaryList()
         this.isLoading = false
-        this.listTarget.focus();
     }
 
     // 滚动监听
@@ -93,9 +101,39 @@ export default class extends Controller {
         this.listTarget.focus();
     }
 
-    keydown(event){
+    getFirstLastItemInViewPort(arrowDirection){
+        let item = this.selectedItem
+        let lastCheckItem = null
+        for(;item;){
+            const rect = item.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const isInViewport = (
+                rect.top >= 0 &&
+                rect.top <= viewportHeight &&
+                rect.bottom >= 0 &&
+                rect.bottom <= viewportHeight
+            );
+            if(isInViewport){
+                lastCheckItem = item
+            }else{
+                break
+            }
+            if(arrowDirection == highlightUp){
+                item = item.previousElementSibling
+            }else if(arrowDirection == highlightDown){
+                item = item.nextElementSibling
+            }
+        }
+        if(lastCheckItem){
+            return lastCheckItem
+        }
+        return null
+    }
+
+    async keydown(event){
         //search
         if((this.ctrlCmdKey(event)&& event.key  == 'k')){
+            this.searchOutlet.focus();
             return
         }
         if((this.ctrlCmdKey(event)&& event.key  == 'n') || event.key=='j' || event.key=='ArrowDown'){
@@ -108,6 +146,29 @@ export default class extends Controller {
             return
         }
 
+        if(event.key == 'Home'){
+            let firstItem = this.listTarget.firstElementChild
+            this.highlightItem(firstItem);
+            return
+        }
+
+        if(event.key == "End"){
+            let lastItem = this.listTarget.lastElementChild
+            this.highlightItem(lastItem);
+            return
+        }
+
+        if(event.key == "PageUp"){
+            let firstItemInView = this.getFirstLastItemInViewPort(highlightUp)
+            this.highlightItem(firstItemInView);
+            return
+        }
+        if(event.key == "PageDown"){
+            let lastItemInView = this.getFirstLastItemInViewPort(highlightDown)
+            this.highlightItem(lastItemInView);
+            return
+        }
+
         if(event.key=='Enter'){
             let diaryID = this.selectedItem.querySelector("span").dataset.id
             this.editorOutlet.loadDiary(diaryID)
@@ -116,9 +177,11 @@ export default class extends Controller {
 
         //open a new diary
         if((this.ctrlCmdKey(event)&& event.key  == 'o')){
-            console.log('==============');
             Query.InsertDiaryRecord("").then((entry)=>{
-                this.createNewItem(entry)
+                this.addNewItem(entry, listInsertBeforeFirst)
+                let firstItem = this.listTarget.firstElementChild
+                this.highlightItem(firstItem);
+                this.editorOutlet.loadDiary(entry.ID)
             })
         }
 
@@ -132,11 +195,11 @@ export default class extends Controller {
         }
     }
 
-    createNewItem(entry){
+    addNewItem(entry, direction){
         let newItem = this.itemTemplateTarget.content.cloneNode(true);
         this.setEntryElement(newItem, entry);
-        this.insertItemToList(newItem, listInsertBeforeFirst);
-        this.highlightItem(this.itemTargets[0]);
+        this.insertItemToList(newItem, direction);
+        return newItem
     }
 
     setEntryElement(item, entry){
@@ -152,51 +215,30 @@ export default class extends Controller {
     }
 
     highlightItem(item) {
+        if(!item){
+            return
+        }
         if (this.selectedItem) {
             this.selectedItem.classList.remove(this.selectedClass)
         }
         item.classList.add(this.selectedClass)
         this.selectedItem = item
-        item.scrollIntoView({ block: "nearest" }) // 始终将高亮 item 滚动到中间
+        item.scrollIntoView({ block: "nearest" }) 
     }
 
-    moveUpOrDownItem(arrowDirection, currentItem) {
+    async moveUpOrDownItem(arrowDirection, currentItem) {
         let item
         if (arrowDirection === highlightUp) {
             item = currentItem.previousElementSibling
         } else if (arrowDirection === highlightDown) {
+            if(currentItem && currentItem.classList.contains("end")){
+                await this.loadMoreDiaryList()
+            }
             item = currentItem.nextElementSibling
         }
         if (item) {
             this.highlightItem(item) // 滚动到中间
         }
-    }
-
-    async moveUpOrDownItem1(arrowDirection, currentItem) {
-        let item
-        if (arrowDirection === highlightUp) {
-            item = currentItem.previousElementSibling
-        } else if (arrowDirection === highlightDown) {
-            item = currentItem.nextElementSibling
-        }
-        if (item) {
-            if(this.itemIsInTop(item)){
-                this.listTarget.scrollTop = 0;
-                console.log("sdfsdfsdf==============");
-            }else{
-                item.scrollIntoView({block: "center" });
-            }
-            return this.highlightItem(item)
-        }
-    }
-
-    itemIsInTop(item){
-        for(let i = 0; i<4&&i<this.itemTargets.length; i++){
-            if(item == this.itemTargets[i]){
-                return true
-            }
-        }
-        return false
     }
 
     updateItem(entry){

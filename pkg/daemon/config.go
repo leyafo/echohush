@@ -141,5 +141,5 @@ func (o DatabaseOption) DBString() string {
 		return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", o.User, o.Password,
 			o.Host, o.Port, o.Name)
 	}
-	panic("your fucking idiom code will waste two hours to debug")
+	panic("your fucking code will waste two hours to debug")
 }

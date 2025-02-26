@@ -8,39 +8,21 @@
 
 <body class="bg-gray-800 font-mono">  
     <main class="flex flex-row h-screen">  
-        <!--div class="basis-1/5 h-full overflow-y-auto bg-[#2e3235] text-white flex-shrink-0">  
-            <ul class="list-none p-2">  
-                Notes
-                <li> Untagged </li>
-                <li> ToDo  </li>
-                <li> Today </li>
-                <li> Locked </li>
-            </ul>
-            <p>Archive</p>
-            <p>Trash</p>
-            <p></p>
-            <p>Bear</p>
-            <ul class="list-none p2">
-                personal
-                <li>family</li>
-                <li>health</li>
-            </ul>
-            <p>blog post</p>
-
-            <ul class="list-none p2">
-                code
-            </ul>
-            <ul class="list-none p2">
-                receipt
-            </ul>
-            <p>science</p>
-            <p>study</p>
-            <p>travel</p>
-        </div-->
         <div class="basis-1/5 bg-white text-gray-900 flex-shrink-0 overflow-x-hidden">  
-            <div id="list" data-controller="list" data-list-editor-outlet="#editor"  data-list-selected-class="bg-gray-300" class="h-full flex flex-col">
-                <div>
-                    <input class="w-full ml-1 mr-1 bg-gray-900 text-gray-200 border border-gray-600 rounded" placeholder="search here"></input>
+            <div id="list" data-controller="list" data-list-search-outlet="#searchBar" data-list-editor-outlet="#editor" data-list-selected-class="bg-gray-300" class="h-full flex flex-col ">
+                <div id="searchBar" data-search-editor-outlet="#editor" data-search-selected-class="bg-gray-300" data-search-list-outlet="#list" data-controller="search" class="relative mb-1">
+                    <div class="relative">
+                        <input data-action="keydown->search#keydown input->search#performSearch compositionend->search#performSearch" data-search-target="input" class="w-full bg-gray-900 text-gray-200 rounded py-3 ps-4 pe-9 block border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" placeholder="search here"></input>
+                    </div>
+                    <template data-search-target="suggestionItemTemplate">
+                        <div class="py-2 px-4 w-full text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100" tabindex="0">
+                            <div class="flex justify-between items-center w-full">
+                                <span class="content">test</span>
+                            </div>
+                        </div>
+                    </template>
+                    <div data-search-target="suggestion" class="absolute z-50 w-full max-h-72 p-1 bg-white border border-gray-200 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 hidden">
+                    </div>
                 </div>
                 <template data-list-target="itemTemplate">
                     <div data-list-target="item" data-action="click->list#itemSelected"  class="flex gap-4 items-start hover:bg-gray-300">
@@ -52,7 +34,7 @@
                         </div>
                     </div>
                 </template>
-                <div data-list-target="list" tabindex="0" data-action="keydown->list#keydown" class="h-full overflow-y-auto">  
+                <div data-list-target="list" tabindex="0" data-action="keydown->list#keydown" class="h-full overflow-y-smooth overflow-x-hidden">  
                 </div>
             </div>
         </div>

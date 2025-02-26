@@ -33,10 +33,11 @@ CGO_SWITCH := 1
 
 dev: ENV = dev
 dev: 
-	CGO_ENABLED=${CGO_SWITCH} wails dev -tags fts5 -ldflags ${GO_LD_FLAGS} \
+	CGO_ENABLED=${CGO_SWITCH} wails dev -tags "fts5,icu" -ldflags ${GO_LD_FLAGS} \
 
 production: ENV = production
-production: build
+production:
+	CGO_ENABLED=${CGO_SWITCH} wails build -debug -tags "fts5,icu" -ldflags ${GO_LD_FLAGS} \
 
 clean:
 	@rm -f ${MKFILE_DIR}bin/${PROJECT_NAME}

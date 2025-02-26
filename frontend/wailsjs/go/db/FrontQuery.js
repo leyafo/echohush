@@ -6,6 +6,10 @@ export function AssignDiaryTag(arg1) {
   return window['go']['db']['FrontQuery']['AssignDiaryTag'](arg1);
 }
 
+export function FtsDiarySearch(arg1) {
+  return window['go']['db']['FrontQuery']['FtsDiarySearch'](arg1);
+}
+
 export function GetAllDiaries() {
   return window['go']['db']['FrontQuery']['GetAllDiaries']();
 }
