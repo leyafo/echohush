@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
+	"echohush/libs"
 	"echohush/pkg/daemon"
+	"echohush/pkg/path"
 
 	"sync"
 
@@ -19,12 +20,12 @@ import (
 
 var once sync.Once
 
-func loadExtension(path string) string {
+func loadExtension(extPath string) string {
 	const driverName = "sqlite3_simple"
 	once.Do(func() {
 		sql.Register(driverName, &sqlite3.SQLiteDriver{
 			Extensions: []string{
-				path,
+				extPath,
 			},
 		})
 	})
@@ -32,6 +33,9 @@ func loadExtension(path string) string {
 }
 
 func openDB(dbPath, password string) (db *sql.DB, err error) {
+	if dbPath == "" {
+		return nil, errors.New("db path cannot be nil")
+	}
 	driverName := ""
 	if daemon.IsDev() {
 		workingDir, err := os.Getwd()
@@ -40,7 +44,19 @@ func openDB(dbPath, password string) (db *sql.DB, err error) {
 		}
 		driverName = loadExtension(path.Join(workingDir, "libs", "libsimple"))
 	} else {
-		panic("todo")
+		configDir := daemon.GetConfigDir()
+		libPath := path.Join(configDir, libs.GetSimpleLibraryName())
+		if !path.PathIsExist(libPath) {
+			libContent, err := libs.Simple.ReadFile(libs.GetSimpleLibraryName())
+			if err != nil {
+				return nil, err
+			}
+			err = os.WriteFile(libPath, libContent, 0644)
+			if err != nil {
+				return nil, err
+			}
+		}
+		driverName = loadExtension(path.Join(configDir, "libsimple"))
 	}
 
 	//SQLCipher v4  https://utelle.github.io/SQLite3MultipleCiphers/docs/ciphers/cipher_sqlcipher/
@@ -56,8 +72,7 @@ func openDB(dbPath, password string) (db *sql.DB, err error) {
 		"_hmac_algorithm=2&"+
 		"_plaintext_header_size=0&"+
 		"_key=%s", dbPath, password)
-	db, err = sql.Open(driverName, dbString)
-	return
+	return sql.Open(driverName, dbString)
 }
 
 func InitDB(path, password, schemaPath string) (*sql.DB, error) {

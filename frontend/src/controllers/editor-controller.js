@@ -6,7 +6,6 @@ import {markdown, markdownLanguage} from "@codemirror/lang-markdown"
 import * as Query from "../../wailsjs/go/db/FrontQuery";
 import {db} from "../../wailsjs/go/models";
 
-
 import {highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
         rectangularSelection, crosshairCursor,
         lineNumbers, highlightActiveLineGutter} from "@codemirror/view"

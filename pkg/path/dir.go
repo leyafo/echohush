@@ -10,6 +10,10 @@ func MakeParentDir(path string) {
 	os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
 
+func MakeDir(dir string) {
+	os.MkdirAll(dir, os.ModePerm)
+}
+
 func PathIsExist(path string) bool {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return false
@@ -27,4 +31,8 @@ func GetPWD() string {
 		return ""
 	}
 	return path
+}
+
+func Join(elem ...string) string {
+	return filepath.Join(elem...)
 }

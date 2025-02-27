@@ -2,7 +2,10 @@ package daemon
 
 import (
 	"fmt"
+	"os"
 	"strings"
+
+	"runtime"
 
 	"echohush/pkg/path"
 
@@ -90,6 +93,49 @@ func ParseConfig(configFile string, opt interface{}) error {
 	}
 
 	return v.Unmarshal(opt)
+}
+
+func GetConfigDir() string {
+	var (
+		homedir string
+		err     error
+	)
+	if IsDev() {
+		homedir, err = os.Getwd()
+	} else {
+		homedir, err = os.UserHomeDir()
+	}
+	if err != nil {
+		panic(err)
+		return ""
+	}
+	var configPath string
+	if runtime.GOOS == "windows" {
+		configPath = path.Join(homedir, "echohush")
+	} else {
+		configPath = path.Join(homedir, ".echohush")
+	}
+	if !path.PathIsExist(configPath) {
+		path.MakeDir(configPath)
+	}
+
+	return configPath
+}
+
+func GetDBPath() string {
+	configPath := path.Join(GetConfigDir(), "echohush")
+	content, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	}
+
+	return strings.TrimSpace(string(content))
+}
+
+func SetDBPath(dbPath string) {
+	configPath := path.Join(GetConfigDir(), "echohush")
+	os.WriteFile(configPath, []byte(dbPath), 0644)
 }
 
 type Log struct {

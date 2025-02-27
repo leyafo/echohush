@@ -2,12 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strings"
 
-	"os"
-	"path"
 	goruntime "runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -51,37 +47,12 @@ func (a *App) Platform() string {
 	return goruntime.GOOS
 }
 
-func (a *App) getConfigDir() string {
-	var (
-		homedir string
-		err     error
-	)
-	if daemon.IsDev() {
-		homedir, err = os.Getwd()
-	} else {
-		homedir, err = os.UserHomeDir()
-	}
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-	return homedir
-}
-
 func (a *App) GetDBPath() string {
-	configPath := path.Join(a.getConfigDir(), ".echohush")
-	content, err := os.ReadFile(configPath)
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	return strings.TrimSpace(string(content))
+	return daemon.GetDBPath()
 }
 
 func (a *App) SetDBPath(dbPath string) {
-	configPath := path.Join(a.getConfigDir(), ".echohush")
-	os.WriteFile(configPath, []byte(dbPath), 0644)
+	daemon.SetDBPath(dbPath)
 }
 
 func (a *App) IsDev() bool {
