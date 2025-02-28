@@ -44,6 +44,10 @@ func (fq *FrontQuery) GetNoTagDiaries(arg2 GetNoTagDiariesParams) ([]Diary, erro
 	return fq.Q.GetNoTagDiaries(context.Background(), arg2)
 }
 
+func (fq *FrontQuery) InitDB(arg2 string, arg3 string) error {
+	return fq.Q.InitDB(context.Background(), arg2, arg3)
+}
+
 func (fq *FrontQuery) InsertDiaryEntry(arg2 InsertDiaryEntryParams) (Diary, error) {
 	return fq.Q.InsertDiaryEntry(context.Background(), arg2)
 }

@@ -1,10 +1,10 @@
 import {Controller} from "@hotwired/stimulus";
 import { Modal } from 'flowbite';
-import { OpenDB } from "../../wailsjs/go/db/FrontQuery";
-import { ChooseFilePath, GetDBPath, IsDev} from "../../wailsjs/go/main/App";
+import { OpenDB, InitDB } from "../../wailsjs/go/db/FrontQuery";
+import { ChooseDir, ChooseFilePath, GetDBPath, IsDev} from "../../wailsjs/go/main/App";
 
 export default class extends Controller {
-    static targets = ['modal', "password", "alert", "diaryPath"]
+    static targets = ['modal', "submitBtn", "password", "alert", "diaryPath", "title"]
     static outlets = ['list']
 
     async connect(){
@@ -28,15 +28,26 @@ export default class extends Controller {
             id: 'authentication-modal',
             override: true
         };
-        this.modal = new Modal(this.modalTarget, options, instanceOptions);
+        let dbPath = await GetDBPath()
+        if(dbPath == ""){//init db
+            this.submitBtnTarget.textContent="Initialize your database"
+            this.titleTarget.textContent="Initialize your database" 
+            this.modalType = "init"
+            this.dbConn = InitDB
+        }else{
+            this.modalType = "open"
+            this.dbConn = OpenDB
+            this.diaryPathTarget.value = dbPath
+        }
 
-        this.diaryPathTarget.value = await GetDBPath()
+        this.modal = new Modal(this.modalTarget, options, instanceOptions);
         this.isDev = await IsDev()
 
-        if(this.isDev){
+        if(this.isDev && this.diaryPathTarget.value != ""){
             let self =this
+            self.modal.show();
             this.passwordTarget.value="hello world"
-            OpenDB(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
+            this.dbConn(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
                 self.listOutlet.loadDiaryList();
                 self.listOutlet.focus();
                 self.modal.hide();
@@ -54,14 +65,18 @@ export default class extends Controller {
 
     async fileChoose(e){
         e.preventDefault();
-        const path = await ChooseFilePath()
-        this.diaryPathTarget.value = path
+        if(this.modalType == "init"){
+            this.diaryPathTarget.value = await ChooseDir()
+        }else{
+            this.diaryPathTarget.value = await ChooseFilePath()
+        }
     }
 
     submit(e){
         let self = this
         e.preventDefault()
-        OpenDB(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
+
+        this.dbConn(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
             self.listOutlet.loadDiaryList();
             self.listOutlet.focus();
             self.modal.hide();

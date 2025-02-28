@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"echohush/pkg/daemon"
+	"echohush/pkg/path"
 )
 
 // App struct
@@ -38,6 +39,22 @@ func (a *App) ChooseFilePath() string {
 		log.Println("Error getting file path:", err)
 		return ""
 	}
+	a.SetDBPath(filePath)
+	return filePath
+}
+
+func (a *App) ChooseDir() string {
+	filePath, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		DefaultDirectory:     daemon.GetConfigDir(),
+		Title:                "Select Diary Saved Folder",
+		ShowHiddenFiles:      true,
+		CanCreateDirectories: true,
+	})
+	if err != nil {
+		log.Println("Error getting file path:", err)
+		return ""
+	}
+	filePath = path.Join(filePath, "echohush.db")
 	a.SetDBPath(filePath)
 	return filePath
 }

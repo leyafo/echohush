@@ -38,6 +38,10 @@ export function GetNoTagDiaries(arg1) {
   return window['go']['db']['FrontQuery']['GetNoTagDiaries'](arg1);
 }
 
+export function InitDB(arg1, arg2) {
+  return window['go']['db']['FrontQuery']['InitDB'](arg1, arg2);
+}
+
 export function InsertDiaryEntry(arg1) {
   return window['go']['db']['FrontQuery']['InsertDiaryEntry'](arg1);
 }

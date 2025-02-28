@@ -20,6 +20,8 @@ export function GetDiaryByTag(arg1:db.GetDiaryByTagParams):Promise<Array<db.Diar
 
 export function GetNoTagDiaries(arg1:db.GetNoTagDiariesParams):Promise<Array<db.Diary>>;
 
+export function InitDB(arg1:string,arg2:string):Promise<void>;
+
 export function InsertDiaryEntry(arg1:db.InsertDiaryEntryParams):Promise<db.Diary>;
 
 export function InsertDiaryRecord(arg1:string):Promise<db.Diary>;

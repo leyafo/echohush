@@ -14,9 +14,14 @@ import (
 
 	"sync"
 
+	"embed"
+
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+//go:embed sql/schema.sql
+var schema embed.FS
 
 var once sync.Once
 
@@ -133,6 +138,19 @@ func SetDB(q *Queries, dbConn *sql.DB) {
 
 func (q *Queries) OpenDB(ctx context.Context, path, password string) error {
 	db, err := OpenDBAndCheckPassword(path, password)
+	if err != nil {
+		return err
+	}
+	q.db = db
+	return err
+}
+
+func (q *Queries) InitDB(ctx context.Context, path, password string) error {
+	schemaContent, err := schema.ReadFile("sql/schema.sql")
+	if err != nil {
+		return err
+	}
+	db, err := InitDBWithSchema(path, password, schemaContent)
 	if err != nil {
 		return err
 	}
