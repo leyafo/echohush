@@ -4,3 +4,4 @@ frontend/dist
 bin/
 cmd/
 .echohush
+build
