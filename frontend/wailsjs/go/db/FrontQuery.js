@@ -18,6 +18,10 @@ export function GetAllDiariesLimit(arg1) {
   return window['go']['db']['FrontQuery']['GetAllDiariesLimit'](arg1);
 }
 
+export function GetConfig(arg1) {
+  return window['go']['db']['FrontQuery']['GetConfig'](arg1);
+}
+
 export function GetDeletedDiaries(arg1) {
   return window['go']['db']['FrontQuery']['GetDeletedDiaries'](arg1);
 }
@@ -52,6 +56,10 @@ export function InsertDiaryRecord(arg1) {
 
 export function OpenDB(arg1, arg2) {
   return window['go']['db']['FrontQuery']['OpenDB'](arg1, arg2);
+}
+
+export function SetConfig(arg1, arg2) {
+  return window['go']['db']['FrontQuery']['SetConfig'](arg1, arg2);
 }
 
 export function UpdateDiaryEntryByID(arg1) {

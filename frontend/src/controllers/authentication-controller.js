@@ -46,12 +46,15 @@ export default class extends Controller {
         if(this.isDev && this.diaryPathTarget.value != ""){
             let self =this
             self.modal.show();
-            this.passwordTarget.value="hello world"
-            this.dbConn(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
-                self.listOutlet.loadDiaryList();
+            this.passwordTarget.value="123"
+            this.dbConn(this.diaryPathTarget.value, this.passwordTarget.value).then(()=>{
+                self.listOutlet.loadDiaryList().then(()=>{
+                    self.listOutlet.openFirstDiary();
+                });
                 self.listOutlet.focus();
                 self.modal.hide();
             }).catch((err)=>{
+                this.passwordTarget.focus();
                 self.modal.show();
                 self.alertTarget.textContent = err;
                 self.alertTarget.classList.remove("hidden");
@@ -59,6 +62,7 @@ export default class extends Controller {
                 console.error(err)
             });
         }else{
+            this.passwordTarget.focus();
             this.modal.show();
         }
     }
@@ -77,7 +81,9 @@ export default class extends Controller {
         e.preventDefault()
 
         this.dbConn(this.diaryPathTarget.value, this.passwordTarget.value).then((err)=>{
-            self.listOutlet.loadDiaryList();
+            self.listOutlet.loadDiaryList().then(()=>{
+                self.listOutlet.openFirstDiary();
+            });
             self.listOutlet.focus();
             self.modal.hide();
         }).catch((err)=>{

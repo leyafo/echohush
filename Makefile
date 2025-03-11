@@ -22,26 +22,27 @@ ifndef GIT_COMMIT
 endif
 
 # Build Flags
-GO_LD_FLAGS= "-s -w -X ${PROJECT_NAME}/pkg/daemon.RELEASE=${RELEASE} 	\
-			  -X ${PROJECT_NAME}/pkg/daemon.COMMIT=${GIT_COMMIT} 		\
-			  -X ${PROJECT_NAME}/pkg/daemon.REPO=${GIT_REPO_INFO} 		\
-			  -X ${PROJECT_NAME}/pkg/daemon.BUILDTIME=${DATETIME} 		\
+GO_LD_FLAGS= "-X ${PROJECT_NAME}/pkg/daemon.RELEASE=${RELEASE} 	\
+			  -X ${PROJECT_NAME}/pkg/daemon.COMMIT=${GIT_COMMIT} \
+			  -X ${PROJECT_NAME}/pkg/daemon.REPO=${GIT_REPO_INFO} \
+			  -X ${PROJECT_NAME}/pkg/daemon.BUILDTIME=${DATETIME} \
 			  -X ${PROJECT_NAME}/pkg/daemon.SERVICENAME=${PROJECT_NAME} \
 			  -X ${PROJECT_NAME}/pkg/daemon.ENV=${ENV} "	 	
 
 CGO_SWITCH := 1
 
-dev: ENV = dev
-dev: 
-	CGO_ENABLED=${CGO_SWITCH} wails dev -tags "fts5" -ldflags ${GO_LD_FLAGS} \
+run: ENV = dev
+run: 
+	CGO_ENABLED=${CGO_SWITCH} wails dev -tags fts5 -ldflags ${GO_LD_FLAGS} 
 
 production: ENV = production
 production:
-	CGO_ENABLED=${CGO_SWITCH} wails build -tags "fts5,desktop,production" -ldflags ${GO_LD_FLAGS} \
+	CGO_ENABLED=${CGO_SWITCH} wails build -tags fts5,desktop,production -ldflags ${GO_LD_FLAGS} 
 
 clean:
 	@rm -f ${MKFILE_DIR}bin/${PROJECT_NAME}
 	@rm -f ${MKFILE_DIR}bin/${PROJECT_NAME}.db
+	@rm -f ${MKFILE_DIR}/.${PROJECT_NAME}/${PROJECT_NAME}.db
 	@rm -f ${MKFILE_DIR}bin/*
 
 db_clean:

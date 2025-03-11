@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import {timeAgo} from "../helpers/index.js"
 import * as Query from "../../wailsjs/go/db/FrontQuery";
 import {db} from "../../wailsjs/go/models";
+import { Platform } from "../../wailsjs/go/main/App";
 
 const highlightUp = 1
 const highlightDown = 2
@@ -21,6 +22,7 @@ export default class extends Controller {
         this.selectedItem = null
 
         this.listTarget.addEventListener("scroll", this.handleScroll.bind(this))
+        this.platform = await Platform() 
     }
 
     async loadDiaryList(direction){
@@ -56,6 +58,12 @@ export default class extends Controller {
         }
     }
 
+    openFirstDiary(){
+        let firstItem = this.listTarget.firstElementChild
+        let diaryID = firstItem.querySelector("span").dataset.id
+        this.editorOutlet.loadDiary(diaryID)
+    }
+
     async loadMoreDiaryList() {
         if (this.isLoading) return // 防止重复加载
         this.isLoading = true
@@ -87,14 +95,10 @@ export default class extends Controller {
     }
 
     ctrlCmdKey(event){
-        //todo check platform
-        return event.ctrlKey;
-        switch (env.platform){
-            case "darwin":
-                return event.metaKey
-            default:
-                return event.ctrlKey
+        if(this.platform == "darwin"){
+            return event.metaKey
         }
+        return event.ctrlKey
     }
 
     focus(){

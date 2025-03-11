@@ -10,6 +10,8 @@ export function GetAllDiaries():Promise<Array<db.Diary>>;
 
 export function GetAllDiariesLimit(arg1:db.GetAllDiariesLimitParams):Promise<Array<db.Diary>>;
 
+export function GetConfig(arg1:string):Promise<string>;
+
 export function GetDeletedDiaries(arg1:db.GetDeletedDiariesParams):Promise<Array<db.Trash>>;
 
 export function GetDiariesCount():Promise<number>;
@@ -27,5 +29,7 @@ export function InsertDiaryEntry(arg1:db.InsertDiaryEntryParams):Promise<db.Diar
 export function InsertDiaryRecord(arg1:string):Promise<db.Diary>;
 
 export function OpenDB(arg1:string,arg2:string):Promise<void>;
+
+export function SetConfig(arg1:string,arg2:string):Promise<void>;
 
 export function UpdateDiaryEntryByID(arg1:db.UpdateDiaryEntryByIDParams):Promise<db.Diary>;

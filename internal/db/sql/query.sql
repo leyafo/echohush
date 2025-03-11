@@ -30,5 +30,3 @@ SELECT diary.* FROM diary JOIN tags ON diary.id = tags.diary_id WHERE tags.tag =
 
 -- name: UpdateDiaryEntryByID :one
 UPDATE diary set entry = ?, updated_at=strftime('%s', 'now') where id = ? RETURNING *; 
-
-

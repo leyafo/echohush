@@ -71,6 +71,7 @@ export default class extends Controller {
             this.selectedItem.classList.remove(this.selectedClass)
             this.selectedItem = item
             this.selectedItem.classList.add(this.selectedClass)
+            item.scrollIntoView({ block: "nearest" }) 
         }
     }
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"echohush/libs"
 	"echohush/pkg/daemon"
@@ -16,8 +17,7 @@ import (
 
 	"embed"
 
-	"github.com/mattn/go-sqlite3"
-	_ "github.com/mattn/go-sqlite3"
+	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
 //go:embed sql/schema.sql
@@ -38,6 +38,14 @@ func loadExtension(extPath string) string {
 }
 
 func openDB(dbPath, password string) (db *sql.DB, err error) {
+	defer func() {
+		if err != nil {
+			fmt.Printf("open db, the error is: %s\n", err.Error())
+			if db != nil {
+				db.Close()
+			}
+		}
+	}()
 	if dbPath == "" {
 		return nil, errors.New("db path cannot be nil")
 	}
@@ -77,7 +85,24 @@ func openDB(dbPath, password string) (db *sql.DB, err error) {
 		"_hmac_algorithm=2&"+
 		"_plaintext_header_size=0&"+
 		"_key=%s", dbPath, password)
-	return sql.Open(driverName, dbString)
+
+	db, err = sql.Open(driverName, dbString)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok {
+			fmt.Printf("SQLite Error Code: %d\n", sqliteErr.Code)
+			fmt.Printf("SQLite Extended Error Code: %d\n", sqliteErr.ExtendedCode)
+			fmt.Printf("SQLite Error Message: %s\n", sqliteErr.Error())
+			return nil, fmt.Errorf("database ping failed: %w", err)
+		}
+		return nil, fmt.Errorf("database ping failed: %w", err)
+	}
+
+	return db, nil
 }
 
 func InitDB(path, password, schemaPath string) (*sql.DB, error) {
@@ -90,6 +115,7 @@ func InitDB(path, password, schemaPath string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("%s\n", schemaContent)
 	_, err = db.Exec(string(schemaContent))
 	if err != nil {
 		return nil, err
@@ -104,8 +130,9 @@ func InitDBWithSchema(path, password string, schemaContent []byte) (*sql.DB, err
 		return nil, err
 	}
 
-	_, err = db.Exec(string(schemaContent))
+	result, err := db.Exec(string(schemaContent))
 	if err != nil {
+		fmt.Printf("init db============%s %v\n", err, result)
 		return nil, err
 	}
 	return db, nil
@@ -118,7 +145,7 @@ func OpenDBAndCheckPassword(path, password string) (*sql.DB, error) {
 	}
 	tables, err := getTables(db)
 	if err != nil {
-		fmt.Printf("%s", err)
+		fmt.Printf("============%s\n", err)
 		return nil, errors.New("password wrong")
 	}
 	if len(tables) == 0 {
@@ -160,7 +187,7 @@ func (q *Queries) InitDB(ctx context.Context, path, password string) error {
 
 func getTables(db *sql.DB) ([]string, error) {
 	// Query the sqlite_master table to get all tables
-	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type='table';")
+	rows, err := db.Query("SELECT name FROM sqlite_master WHERE type= ?", "table")
 	if err != nil {
 		return nil, fmt.Errorf("Error querying tables: %s", err)
 	}
@@ -178,9 +205,49 @@ func getTables(db *sql.DB) ([]string, error) {
 
 	// Check for errors from iterating over rows
 	if err = rows.Err(); err != nil {
-		log.Fatal("Error iterating rows:", err)
 		return nil, err
 	}
+	return result, nil
+}
+
+func GetDBInfo(db *sql.DB) (string, error) {
+	var result string
+	rows, err := db.Query("PRAGMA compile_options;")
+	if err != nil {
+		return "", err
+	}
+
+	for rows.Next() {
+		var row string
+		if err = rows.Scan(&row); err != nil {
+			return "", err
+		}
+		if row == "ENABLE_FTS5" {
+			result += row + "\n"
+			break
+		}
+	}
+	rows.Close()
+
+	rows, err = db.Query(`select simple_query('pinyin')`)
+	if err != nil {
+		return "", err
+	}
+	for rows.Next() {
+		var row string
+		if err = rows.Scan(&row); err != nil {
+			return "", err
+		}
+		result += row + "\n"
+	}
+	rows.Close()
+
+	tables, err := getTables(db)
+	if err != nil {
+		return "", err
+	}
+	result += "tables: " + strings.Join(tables, "\t")
+
 	return result, nil
 }
 
@@ -203,4 +270,32 @@ func (q *Queries) FtsDiarySearch(ctx context.Context, keyword string) (results [
 		results = append(results, d)
 	}
 	return
+}
+
+type configParams struct {
+	Key   sql.NullString
+	Value sql.NullString
+}
+
+func (q *Queries) SetConfig(ctx context.Context, key, value string) error {
+	const setConfig = `
+	INSERT INTO configurations (key, value) 
+	VALUES (?, ?)
+	ON CONFLICT(key) DO UPDATE SET value = excluded.value;
+	`
+	argKey := sql.NullString{String: key, Valid: true}
+	argValue := sql.NullString{String: value, Valid: true}
+	_, err := q.db.ExecContext(ctx, setConfig, argKey, argValue)
+	return err
+}
+
+func (q *Queries) GetConfig(ctx context.Context, key string) (string, error) {
+	const getConfig = `select value from configurations where "key" = ?`
+	row := q.db.QueryRowContext(ctx, getConfig, key)
+	var value sql.NullString
+	err := row.Scan(&value)
+	if err != nil {
+		return "", err
+	}
+	return value.String, nil
 }

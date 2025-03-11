@@ -1,39 +1,35 @@
 import { Controller } from "@hotwired/stimulus"
 import { EditorView } from 'codemirror';
-import { keymap } from '@codemirror/view';
-import { EditorState,  StateEffect, StateField } from "@codemirror/state";
+import { EditorState,  StateEffect, StateField, EditorSelection } from "@codemirror/state";
 import {markdown, markdownLanguage} from "@codemirror/lang-markdown"
 import * as Query from "../../wailsjs/go/db/FrontQuery";
 import {db} from "../../wailsjs/go/models";
+import {ClipboardGetText, ClipboardSetText} from "../../wailsjs/runtime"
 
-import {highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
-        rectangularSelection, crosshairCursor,
-        lineNumbers, highlightActiveLineGutter} from "@codemirror/view"
-import {defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching,
-        foldGutter } from "@codemirror/language"
-import {emacsStyleKeymap, history, historyKeymap, deleteGroupBackward} from "@codemirror/commands"
-import {highlightSelectionMatches} from "@codemirror/search"
+import {highlightSpecialChars, drawSelection, highlightActiveLine, 
+        rectangularSelection, 
+        lineNumbers, highlightActiveLineGutter, keymap } from "@codemirror/view"
+import {defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching} from "@codemirror/language"
+import {insertTab, deleteToLineStart, emacsStyleKeymap, history, historyKeymap, deleteGroupBackward} from "@codemirror/commands"
 
 
+const customHistoryKeymap = historyKeymap.filter((keymap)=> keymap.key != "Mod-u");
+const customEmacsKeymap = emacsStyleKeymap.filter((keymap)=> keymap.key != "Ctrl-v");
 const basicSetup = (() => [
     lineNumbers(),
-    highlightActiveLineGutter(),
     highlightSpecialChars(),
     history(),
-    foldGutter(),
     drawSelection(),
-    dropCursor(),
     EditorState.allowMultipleSelections.of(true),
     indentOnInput(),
     syntaxHighlighting(defaultHighlightStyle, {fallback: true}),
     bracketMatching(),
     rectangularSelection(),
-    crosshairCursor(),
     highlightActiveLine(),
-    highlightSelectionMatches(),
+    highlightActiveLineGutter(),
     keymap.of([
-        ...emacsStyleKeymap,
-        ...historyKeymap,
+        ...customEmacsKeymap,
+        ...customHistoryKeymap,
     ])
 ])()
 
@@ -71,7 +67,6 @@ export default class extends Controller {
         this.currentDiary = diary;
         this.editor.setState(this.createNewState(diary.Entry));
         this.editor.contentDOM.focus();
-        this.moveCursorToEnd()
     }
 
     async dispatchSaving(){
@@ -95,7 +90,7 @@ export default class extends Controller {
                         }
                         self.autoSaveTimeout = setTimeout(()=>{
                             self.dispatchSaving();
-                        }, 2000) //save every 2 seconds when stop typing
+                        }, 1000) //save every 2 seconds when stop typing
                     }
                 }),
                 this.customKeymap(),
@@ -122,15 +117,77 @@ export default class extends Controller {
                     self.saveNow();
                 },
             }, 
-            { key: "Ctrl-w", run: (view) => {
-                deleteGroupBackward(view)
-            }},
+            { 
+                key: "Mod-w", run: (view) => {
+                    deleteGroupBackward(view);
+                },
+            },
+            { 
+                key: "Mod-u", run: (view) => {
+                    return deleteToLineStart(view);
+                },
+            },
+            { 
+                key: "Tab", run: (view) => {
+                    return insertTab(view);
+                },
+            },
+            { 
+                key: "Home", run: (view) => {
+                    view.dispatch({
+                        selection: { anchor: view.state.doc.length, head: 0 }, // Move cursor to the begin
+                    });
+                },
+            },
+            { 
+                key: "End", run: (view) => {
+                    view.dispatch({
+                        selection: { anchor: view.state.doc.length, head: view.state.doc.length }, // Move cursor to the End
+                    });
+                },
+            },
+            {
+                key: "Mod-c", run: (view)=>{
+                    const selection = view.state.selection.main;
+                    if (!selection.empty) {
+                        const text = view.state.doc.sliceString(selection.from, selection.to);
+                        ClipboardSetText(text);
+                    }
+                    return true;
+                },
+            },
+            {
+                key: "Mod-x", run: (view)=>{
+                    const selection = view.state.selection.main;
+                    if (!selection.empty) {
+                        const text = view.state.doc.sliceString(selection.from, selection.to);
+                        ClipboardSetText(text);
+                        view.dispatch({ changes: { from: selection.from, to: selection.to, insert: "" } });
+                    }
+                    return true;
+                },
+            },
+            {
+                key: "Mod-v", run: async(view)=>{
+                    const text = await ClipboardGetText();
+
+                    const cursorPos = view.state.selection.main.from; // Current cursor position
+                    const newCursorPos = cursorPos + text.length; // End of pasted text
+
+                    view.dispatch({
+                        changes: { from: cursorPos, insert: text }, // Insert the text
+                        selection: EditorSelection.single(newCursorPos), // Move cursor to end
+                        effects: EditorView.scrollIntoView(newCursorPos, { y: "center" }),
+                    });
+                    return true;
+                },
+            }
         ]);
         return km
     }
 
     focus(){
-        self.editor.contentDOM.focus();
+        this.editor.contentDOM.focus();
     }
 
     connect(){
@@ -155,5 +212,29 @@ export default class extends Controller {
             state: this.createNewState(),
             parent: this.containerTarget,
         })
+
+        this.editor.contentDOM.addEventListener("blur",()=>{
+            if(self.currentDiary){
+                Query.SetConfig(`diary_pos_${self.currentDiary.ID}`, `${self.editor.state.selection.main.from}`)
+            }
+        })
+
+        this.editor.contentDOM.addEventListener("focus",()=>{
+            if(self.currentDiary){
+                Query.GetConfig(`diary_pos_${self.currentDiary.ID}`).then((value)=>{
+                    let newPosition = parseInt(value)
+                    self.editor.dispatch({
+                        selection: EditorSelection.single(newPosition),
+                        effects: EditorView.scrollIntoView(newPosition, { y: "center" }),
+
+                    });
+                }).catch((err)=>{
+                    console.error(err)
+                    self.moveCursorToEnd()
+                })
+            }
+        })
+
+
     }
 }
