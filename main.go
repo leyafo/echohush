@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 
 	"echohush/internal/db"
 	"echohush/pkg/daemon"
@@ -15,7 +16,19 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+//go:embed README.md
+var readme embed.FS
+
+//go:embed internal/db/sql/schema.sql
+var schema embed.FS
+
 func main() {
+	daemon.SetGlobalFS(
+		daemon.FSPair{Key: "readme", FS: readme},
+		daemon.FSPair{Key: "schema", FS: schema},
+		daemon.FSPair{Key: "assets", FS: assets},
+	)
+
 	fmt.Println(daemon.VsersionLong())
 	// Create an instance of the app structure
 	app := NewApp()
@@ -33,6 +46,9 @@ func main() {
 		Bind: []interface{}{
 			app,
 			query,
+		},
+		Linux: &linux.Options{
+			WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
 		},
 	})
 

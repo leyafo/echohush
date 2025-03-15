@@ -15,13 +15,8 @@ import (
 
 	"sync"
 
-	"embed"
-
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
-
-//go:embed sql/schema.sql
-var schema embed.FS
 
 var once sync.Once
 
@@ -173,7 +168,7 @@ func (q *Queries) OpenDB(ctx context.Context, path, password string) error {
 }
 
 func (q *Queries) InitDB(ctx context.Context, path, password string) error {
-	schemaContent, err := schema.ReadFile("sql/schema.sql")
+	schemaContent, err := daemon.GetGlobalFSContent("schema", "internal/db/sql/schema.sql")
 	if err != nil {
 		return err
 	}
@@ -182,6 +177,19 @@ func (q *Queries) InitDB(ctx context.Context, path, password string) error {
 		return err
 	}
 	q.db = db
+	return q.insertReadme()
+}
+
+func (q *Queries) insertReadme() error {
+	count, err := q.GetDiariesCount(context.Background())
+	if err == nil && count == 0 {
+		readme, err := daemon.GetGlobalFSContent("readme", "README.md")
+		if err != nil {
+			return err
+		}
+		_, err = q.InsertDiaryRecord(context.Background(), string(readme))
+	}
+
 	return err
 }
 

@@ -54,7 +54,6 @@ export default class extends Controller {
                 self.listOutlet.focus();
                 self.modal.hide();
             }).catch((err)=>{
-                this.passwordTarget.focus();
                 self.modal.show();
                 self.alertTarget.textContent = err;
                 self.alertTarget.classList.remove("hidden");
@@ -62,9 +61,9 @@ export default class extends Controller {
                 console.error(err)
             });
         }else{
-            this.passwordTarget.focus();
             this.modal.show();
         }
+        this.passwordTarget.focus();
     }
 
     async fileChoose(e){
