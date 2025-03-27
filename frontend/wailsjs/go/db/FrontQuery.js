@@ -26,6 +26,10 @@ export function GetDeletedDiaries(arg1) {
   return window['go']['db']['FrontQuery']['GetDeletedDiaries'](arg1);
 }
 
+export function GetDiariesByIDs(arg1) {
+  return window['go']['db']['FrontQuery']['GetDiariesByIDs'](arg1);
+}
+
 export function GetDiariesCount() {
   return window['go']['db']['FrontQuery']['GetDiariesCount']();
 }

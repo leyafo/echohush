@@ -12,7 +12,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "dev:website": "vite --config vite.config.website.js",
+    "build:main": "vite build --config vite.config.js",
+    "build:website": "vite build --config vite.config.website.js",
+    "build": "npm run build:main && npm run build:website"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.3.2",

@@ -55,6 +55,6 @@ sqlc:
 	sqlc generate
 
 db_gen: sqlc
-	rm internal/db/query.gen.go
+	rm internal/db/query.gen.go || true
 	go run cmd/gencall/main.go > 11
 	mv 11 internal/db/query.gen.go

@@ -1,12 +1,12 @@
 package db
-
 import (
 	"context"
 )
 
-type FrontQuery struct {
+type FrontQuery struct{
 	Q *Queries
 }
+
 
 func (fq *FrontQuery) AssignDiaryTag(arg2 AssignDiaryTagParams) (Tag, error) {
 	return fq.Q.AssignDiaryTag(context.Background(), arg2)
@@ -30,6 +30,10 @@ func (fq *FrontQuery) GetConfig(arg2 string) (string, error) {
 
 func (fq *FrontQuery) GetDeletedDiaries(arg2 GetDeletedDiariesParams) ([]Trash, error) {
 	return fq.Q.GetDeletedDiaries(context.Background(), arg2)
+}
+
+func (fq *FrontQuery) GetDiariesByIDs(arg2 []int64) ([]Diary, error) {
+	return fq.Q.GetDiariesByIDs(context.Background(), arg2)
 }
 
 func (fq *FrontQuery) GetDiariesCount() (int64, error) {

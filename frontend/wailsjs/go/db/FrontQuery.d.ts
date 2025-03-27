@@ -14,6 +14,8 @@ export function GetConfig(arg1:string):Promise<string>;
 
 export function GetDeletedDiaries(arg1:db.GetDeletedDiariesParams):Promise<Array<db.Trash>>;
 
+export function GetDiariesByIDs(arg1:Array<number>):Promise<Array<db.Diary>>;
+
 export function GetDiariesCount():Promise<number>;
 
 export function GetDiaryByID(arg1:number):Promise<db.Diary>;

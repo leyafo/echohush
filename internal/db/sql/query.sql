@@ -28,5 +28,8 @@ SELECT diary.* FROM diary LEFT JOIN tags ON diary.id = tags.diary_id WHERE tags.
 -- name: GetDiaryByTag :many
 SELECT diary.* FROM diary JOIN tags ON diary.id = tags.diary_id WHERE tags.tag = ? order by diary.id desc limit ? offset ?;
 
+-- name: GetDiariesByIDs :many
+SELECT * from diary where id in (sqlc.slice('ids'));
+
 -- name: UpdateDiaryEntryByID :one
 UPDATE diary set entry = ?, updated_at=strftime('%s', 'now') where id = ? RETURNING *; 

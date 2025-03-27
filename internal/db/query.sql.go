@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"strings"
 	"time"
 )
 
@@ -120,6 +121,48 @@ func (q *Queries) GetDeletedDiaries(ctx context.Context, arg GetDeletedDiariesPa
 			&i.DiaryCreatedAt,
 			&i.DiaryUpdatedAt,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getDiariesByIDs = `-- name: GetDiariesByIDs :many
+SELECT id, entry, created_at, updated_at from diary where id in (/*SLICE:ids*/?)
+`
+
+func (q *Queries) GetDiariesByIDs(ctx context.Context, ids []int64) ([]Diary, error) {
+	query := getDiariesByIDs
+	var queryParams []interface{}
+	if len(ids) > 0 {
+		for _, v := range ids {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:ids*/?", strings.Repeat(",?", len(ids))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:ids*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Diary
+	for rows.Next() {
+		var i Diary
+		if err := rows.Scan(
+			&i.ID,
+			&i.Entry,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

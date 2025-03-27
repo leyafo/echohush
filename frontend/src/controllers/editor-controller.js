@@ -2,16 +2,37 @@ import { Controller } from "@hotwired/stimulus"
 import { EditorView } from 'codemirror';
 import { EditorState,  StateEffect, StateField, EditorSelection } from "@codemirror/state";
 import {markdown, markdownLanguage} from "@codemirror/lang-markdown"
+import {
+    highlightSpecialChars, 
+    drawSelection,
+    highlightActiveLine, 
+    rectangularSelection,
+    lineNumbers,
+    highlightActiveLineGutter, 
+    keymap,
+    showPanel 
+} from "@codemirror/view"
+import {
+    defaultHighlightStyle,
+    syntaxHighlighting,
+    indentOnInput,
+    bracketMatching
+} from "@codemirror/language"
+
+import {
+    insertTab, 
+    deleteToLineStart,
+    emacsStyleKeymap,
+    history, 
+    historyKeymap,
+    deleteGroupBackward
+} from "@codemirror/commands"
+
 import * as Query from "../../wailsjs/go/db/FrontQuery";
 import {db} from "../../wailsjs/go/models";
 import {ClipboardGetText, ClipboardSetText} from "../../wailsjs/runtime"
 
-import {highlightSpecialChars, drawSelection, highlightActiveLine, 
-        rectangularSelection, 
-        lineNumbers, highlightActiveLineGutter, keymap } from "@codemirror/view"
-import {defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching} from "@codemirror/language"
-import {insertTab, deleteToLineStart, emacsStyleKeymap, history, historyKeymap, deleteGroupBackward} from "@codemirror/commands"
-
+const pattern = /[a-zA-Z0-9'_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff\u0400-\u04ff]+[a-zA-Z0-9'_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff\u0400-\u04ff-]*|[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
 
 const customHistoryKeymap = historyKeymap.filter((keymap)=> keymap.key != "Mod-u");
 const customEmacsKeymap = emacsStyleKeymap.filter((keymap)=> keymap.key != "Ctrl-v");
@@ -93,6 +114,7 @@ export default class extends Controller {
                         }, 1000) //save every 2 seconds when stop typing
                     }
                 }),
+                showPanel.of(self.wordCountPanel.bind(self)),
                 this.customKeymap(),
                 this.saveField,
                 markdown({base: markdownLanguage}),
@@ -190,6 +212,48 @@ export default class extends Controller {
         this.editor.contentDOM.focus();
     }
 
+
+    countWords(text){
+        const m = text.match(pattern);
+        let count = 0;
+        if (!m) {
+            return 0;
+        }
+        for (let i = 0; i < m.length; i++) {
+            if (m[i].charCodeAt(0) >= 0x4e00) {
+                count += m[i].length;
+            } else {
+                count += 1;
+            }
+        }
+        return `Word count: ${count}`
+    }
+
+    wordCountPanel(view){
+        let self = this
+        let dom = document.createElement("div")
+        let content = view.state.doc.toString()
+        dom.textContent = self.countWords(content)
+
+        dom.style.padding = "5px 10px";
+        dom.style.backgroundColor = "#f0f0f0";
+        dom.style.fontFamily = "monospace";
+        //dom.textContent = `Word count: ${self.countWords(content)}`;
+
+
+        // Ensure the panel fits within the editor
+        dom.style.width = "100%"; // Full width of the editor
+        dom.style.boxSizing = "border-box"; // Include padding in width
+        return {
+            dom,
+            update(update) {
+                if (update.docChanged)
+                    dom.textContent = self.countWords(update.state.doc.toString())
+            },
+            top: false,
+        }
+    }
+
     connect(){
         let self = this
         this.saveEffect = StateEffect.define();
@@ -219,7 +283,8 @@ export default class extends Controller {
             }
         })
 
-        this.editor.contentDOM.addEventListener("focus",()=>{
+        let dom = this.editor.contentDOM;
+        dom.addEventListener("focus",()=>{
             if(self.currentDiary){
                 Query.GetConfig(`diary_pos_${self.currentDiary.ID}`).then((value)=>{
                     let newPosition = parseInt(value)
@@ -234,7 +299,5 @@ export default class extends Controller {
                 })
             }
         })
-
-
     }
 }

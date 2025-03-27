@@ -1,4 +1,4 @@
-# EchoHush Help
+# EchoHush 
 Echo Hush is a journal app designed for capturing your daily experiences. You can write anything in it—every thought, feeling, or moment that matters to you. Your diary is stored securely with encryption, ensuring that no one else can access it. Your data remains private and protected.
 
 Robert A. Heinlein once said:
