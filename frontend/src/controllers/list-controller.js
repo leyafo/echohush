@@ -25,21 +25,6 @@ export default class extends Controller {
         this.listTarget.addEventListener("scroll", this.handleScroll.bind(this))
         this.platform = await Platform() 
 
-        // Set up Intersection Observer to track visible items
-        this.visibleItems = new Set(); // To store currently visible items
-        this.observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const item = entry.target;
-                if (entry.isIntersecting) {
-                    self.visibleItems.add(item); // Add to visible set
-                } else {
-                    self.visibleItems.delete(item); // Remove from visible set
-                }
-            });
-        }, {
-            root: null, // Use the viewport as the root
-            threshold: 0.1 // Trigger when 10% of the item is visible
-        });
         this.refresIntervalID = setInterval(() => {
             self.refreshList()
         }, 60 * 1000); // 60 seconds = 1 minute
@@ -126,19 +111,23 @@ export default class extends Controller {
         this.listTarget.focus();
     }
 
+    itemIsInViewPort(item){
+        const rect = item.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const isInViewport = (
+            rect.top >= 0 &&
+            rect.top <= viewportHeight &&
+            rect.bottom >= 0 &&
+            rect.bottom <= viewportHeight
+        );
+        return isInViewport
+    }
+
     getFirstLastItemInViewPort(arrowDirection){
         let item = this.selectedItem
         let lastCheckItem = null
         for(;item;){
-            const rect = item.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const isInViewport = (
-                rect.top >= 0 &&
-                rect.top <= viewportHeight &&
-                rect.bottom >= 0 &&
-                rect.bottom <= viewportHeight
-            );
-            if(isInViewport){
+            if(this.itemIsInViewPort(item)){
                 lastCheckItem = item
             }else{
                 break
@@ -224,10 +213,6 @@ export default class extends Controller {
         let newItem = this.itemTemplateTarget.content.cloneNode(true);
         this.setEntryElement(newItem, entry);
         this.insertItemToList(newItem, direction);
-        let instanceItem = this.element.querySelector(`#item-${entry.ID}`).parentNode
-        if(instanceItem){
-            this.observer.observe(instanceItem)
-        }
         return newItem
     }
 
@@ -277,10 +262,12 @@ export default class extends Controller {
 
     async refreshList(){
         let diaryIDs = [];
-        let self = this
-        self.visibleItems.forEach(item => {
-            let diaryID = item.querySelector("span").dataset.id
-            diaryIDs.push(Number(diaryID))
+        let self = this;
+        self.listTarget.querySelectorAll('[data-list-target="item"]').forEach(item => {
+            if(self.itemIsInViewPort(item)){
+                let diaryID = item.querySelector("span").dataset.id
+                diaryIDs.push(Number(diaryID))
+            }
         });
         if (diaryIDs.length > 0){
             let diaries = await Query.GetDiariesByIDs(diaryIDs)
