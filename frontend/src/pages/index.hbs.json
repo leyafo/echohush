@@ -1,0 +1,55 @@
+{
+  "title": "EchoHush",
+  "fork_github":"Fork on GitHub",
+  "title_desc":"Your Private Space for Thoughts and Memories",
+  "download":"Download",
+  "learn_more":"Learn More",
+  "h2":"Your Safe Haven for Thoughts and Memories",
+  "h2_desc":"Echohush is a minimalist journaling app designed to keep your thoughts secure, organized, and truly yours. Write with confidence, knowing your story stays private.",
+  "aes_feature":"AES-256 ENCRYPTION",
+  "aes_feature_desc":"Your diary is locked with AES-256 encryption, ensuring absolute privacy. Your thoughts are yours alone—safe from prying eyes.",
+  "effortless_writing_feature":"EFFORTLESS WRITING",
+  "effortless_writing_feature_desc":"Start writing painlessly with a clean, simple interface. Markdown support makes formatting a breeze, so you can focus on your words.",
+  "fulltext_search_feature":"FULL-TEXT SEARCH",
+  "fulltext_search_feature_desc":"Find any entry in seconds. Search for any word or phrase, and Echohush will instantly bring up your past journals.",
+  "add_free_feature":"COMPLETELY AD-FREE",
+  "ad_free_feature_desc":"No ads, no distractions. Echohush is a pure, uninterrupted journaling experience—no forced content, ever.",
+  "full_keyboard_feature":"FULL KEYBOARD SUPPORT",
+  "full_keyboard_feature_desc":"Edit comfortably without a mouse. Echohush is built for writers, with seamless keyboard navigation for a smooth journaling flow.",
+  "opensource_feature":"Open Source",
+  "opensource_feature_desc":"Echohush is fully open-source, so you can trust there are no backdoors—your privacy is guaranteed. Rest easy knowing your journal is secure and transparent.",
+  "faq":"Frequently asked questions",
+  "faq_content":[
+      {
+          "q": "Why did you create this app?",
+          "a":"I built Echohush because I needed a private journaling tool for myself. It’s designed with my own needs in mind—secure, simple, and distraction-free."
+      },
+      {
+          "q":"Can you guarantee my privacy?",
+          "a":"Yes. Echohush uses AES-256 encryption, and the code is open-source for transparency. You can look up the difficulty of cracking AES-256—it’s virtually impossible with current technology."
+      },
+      {
+          "q":"What if I forget my password?",
+          "a":"You should store your password in a secure, hidden place (I recommend a password manager). If you forget it, I can’t recover it for you—your data stays locked for your protection."
+      },
+      {
+          "q":"Why are there no ads?",
+          "a":"There’s simply no space for ads in this app. Trust me, I’d love to make money, but Echohush is about keeping your experience clean and uninterrupted."
+      },
+      {
+          "q":"Why is it free?",
+          "a":"Same reason—no space to charge you! It’s built to be simple and accessible. If you’d like to support the project, donations are always welcome."
+      },
+      {
+          "q":"Where did the inspiration come from?",
+          "a":"Echohush was inspired by <a class=\"underline\" href=\"https://notational.net/\">Notational Velocity</a>, a great tool I admired. Unfortunately, it doesn’t work on Windows or Linux, so I created a solution that does."
+      },
+      {
+          "q":"What skills do I need to use this app better?",
+          "a":"Just practice your typing. The faster you type, the more seamless your journaling experience will be. That’s all you need!"
+      }
+  ],
+  "enjoying_echohush":"Enjoying Echohush?",
+
+  "buyme_coffee_desc":"Consider buying me a coffee to support my work!"
+}
