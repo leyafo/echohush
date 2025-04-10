@@ -1,6 +1,6 @@
 // vite.config.website.js
 import { defineConfig } from 'vite';
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from '@vituum/vite-plugin-tailwindcss'
 import vituum from 'vituum';
 import handlebars from '@vituum/vite-plugin-handlebars';
 

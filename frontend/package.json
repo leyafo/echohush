@@ -29,6 +29,7 @@
   },
   "devDependencies":{
     "@vituum/vite-plugin-handlebars": "^1",
+	"@vituum/vite-plugin-tailwindcss": "^1",
     "vituum": "^1"
   }
 }
