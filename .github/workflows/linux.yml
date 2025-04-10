@@ -58,7 +58,7 @@ jobs:
 
       - name: Install wails
         shell: bash
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@2.9.2
 
       - name: Install Ubuntu prerequisites
         shell: bash
@@ -86,6 +86,9 @@ jobs:
         shell: bash
         run: |
           make production
+          pwd
+          ls
+          ls build
 
       - name: Setup control template
         shell: bash
