@@ -35,7 +35,7 @@ run:
 
 production: ENV = production
 production:
-	CGO_ENABLED=${CGO_SWITCH} wails build -tags fts5,desktop,production -ldflags ${GO_LD_FLAGS} 
+	CGO_ENABLED=${CGO_SWITCH} wails build -tags fts5,desktop,production -ldflags ${GO_LD_FLAGS} -o echohush 
 
 clean:
 	@rm -f ${MKFILE_DIR}bin/${PROJECT_NAME}
