@@ -125,9 +125,8 @@ func InitDBWithSchema(path, password string, schemaContent []byte) (*sql.DB, err
 		return nil, err
 	}
 
-	result, err := db.Exec(string(schemaContent))
+	_, err = db.Exec(string(schemaContent))
 	if err != nil {
-		fmt.Printf("init db============%s %v\n", err, result)
 		return nil, err
 	}
 	return db, nil
@@ -140,7 +139,6 @@ func OpenDBAndCheckPassword(path, password string) (*sql.DB, error) {
 	}
 	tables, err := getTables(db)
 	if err != nil {
-		fmt.Printf("============%s\n", err)
 		return nil, errors.New("password wrong")
 	}
 	if len(tables) == 0 {

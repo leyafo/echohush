@@ -31,8 +31,6 @@ var icon []byte
 
 const appName = "EchoHush"
 
-var version = "0.0.0"
-
 func main() {
 	daemon.SetGlobalFS(
 		daemon.FSPair{Key: "readme", FS: readme},
@@ -64,8 +62,8 @@ func main() {
 		Mac: &mac.Options{
 			TitleBar: mac.TitleBarHiddenInset(),
 			About: &mac.AboutInfo{
-				Title:   fmt.Sprintf("%s %s", appName, version),
-				Message: "A modern lightweight cross-platform Redis desktop client.\n\nCopyright © 2025",
+				Title:   fmt.Sprintf("%s %s", appName, daemon.Version.Tag),
+				Message: "Your Private Space for Thoughts and Memories Download.\n\nCopyright © 2025",
 				Icon:    icon,
 			},
 			WebviewIsTransparent: false,

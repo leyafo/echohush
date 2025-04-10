@@ -20,6 +20,7 @@ var (
 	API = "v1"
 
 	ENV = "dev"
+	TAG = "1.0.0"
 
 	Version   Ver
 	startTime time.Time
@@ -38,6 +39,7 @@ type Ver struct {
 	API         string `json:"api"`
 	RunningTime string `json:"running_time"`
 	Env         string `json:"env"`
+	Tag         string `json:"tag"`
 }
 
 func init() {
@@ -49,6 +51,7 @@ func init() {
 		BuildTime:   BUILDTIME,
 		API:         API,
 		Env:         ENV,
+		Tag:         TAG,
 	}
 }
 func VersionShort() string {

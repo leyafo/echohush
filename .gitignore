@@ -1,7 +1,6 @@
-build/bin
+./build/bin
 node_modules
 frontend/dist
 bin/
 cmd/
 .echohush
-build

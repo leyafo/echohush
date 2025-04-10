@@ -10,24 +10,22 @@ MKFILE_DIR := $(dir $(MKFILE_PATH))
 RELEASE_DIR := ${MKFILE_DIR}bin
 ENV=dev
 
-# Version
-RELEASE?=0.0.1
 ifndef GIT_COMMIT
   GIT_COMMIT := git-$(shell git rev-parse --short HEAD)
 endif
 
 GIT_REPO_INFO=$(shell git config --get remote.origin.url)
-ifndef GIT_COMMIT
-  GIT_COMMIT := git-$(shell git rev-parse --short HEAD)
-endif
+
+VERSION_TAG=$(shell git describe --tags `git rev-list --tags --max-count=1`)
 
 # Build Flags
-GO_LD_FLAGS= "-X ${PROJECT_NAME}/pkg/daemon.RELEASE=${RELEASE} 	\
+GO_LD_FLAGS= "-X ${PROJECT_NAME}/pkg/daemon.RELEASE=${VERSION_TAG} 	\
 			  -X ${PROJECT_NAME}/pkg/daemon.COMMIT=${GIT_COMMIT} \
 			  -X ${PROJECT_NAME}/pkg/daemon.REPO=${GIT_REPO_INFO} \
 			  -X ${PROJECT_NAME}/pkg/daemon.BUILDTIME=${DATETIME} \
 			  -X ${PROJECT_NAME}/pkg/daemon.SERVICENAME=${PROJECT_NAME} \
-			  -X ${PROJECT_NAME}/pkg/daemon.ENV=${ENV} "	 	
+			  -X ${PROJECT_NAME}/pkg/daemon.ENV=${ENV} \
+			  -X ${PROJECT_NAME}/pkg/daemon.TAG=${VERSION_TAG}"
 
 CGO_SWITCH := 1
 
