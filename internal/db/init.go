@@ -180,6 +180,12 @@ func (q *Queries) InitDB(ctx context.Context, path, password string) error {
 	return q.insertReadme()
 }
 
+func (q *Queries) CloseDB() {
+	if q.db != nil {
+		q.db.(*sql.DB).Close()
+	}
+}
+
 func (q *Queries) insertReadme() error {
 	count, err := q.GetDiariesCount(context.Background())
 	if err == nil && count == 0 {
