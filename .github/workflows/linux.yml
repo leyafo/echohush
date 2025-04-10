@@ -58,7 +58,7 @@ jobs:
 
       - name: Install wails
         shell: bash
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@2.9.2
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.9.2
 
       - name: Install Ubuntu prerequisites
         shell: bash
