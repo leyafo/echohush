@@ -58,7 +58,7 @@ jobs:
 
       - name: Install wails
         shell: bash
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.9.2
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
       - name: Install Ubuntu prerequisites
         shell: bash
@@ -85,10 +85,7 @@ jobs:
       - name: Build wails app for Linux
         shell: bash
         run: |
-          make production
-          pwd
-          ls
-          ls build
+          CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} -tags fts5,desktop,production -ldflags "-X echohush/pkg/daemon.RELEASE=${{ steps.normalise_version.outputs.version }} -X echohush/pkg/daemon.COMMIT=git-6d80d50 -X echohush/pkg/daemon.REPO=git@github.com:leyafo/echohush.git -X echohush/pkg/daemon.BUILDTIME=$(date +%Y-%m-%d_%H:%M:%S) -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{ steps.normalise_version.outputs.version }}" -o echohush
 
       - name: Setup control template
         shell: bash
@@ -114,6 +111,10 @@ jobs:
       - name: Package up deb file
         shell: bash
         run: |
+          ls build/
+          echo '==='
+          ls build/bin
+          echo '==='
           mv build/bin/echohush build/linux/amd64/usr/local/bin/
           cd build/linux
           mv amd64 "echohush_${{ steps.normalise_version.outputs.version }}_amd64"
