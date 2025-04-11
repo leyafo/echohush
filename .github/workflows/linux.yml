@@ -50,11 +50,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git build-essential libgtk-3-dev libwebkit2gtk-4.0-dev libfuse-dev libfuse2
 
+      - name: get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
+
       - name: Normalise version tag
         id: normalise_version
         shell: bash
         run: |
-          version=$(git describe --tags `git rev-list --tags --max-count=1`)
+          version=${{ steps.tag.outputs.tag }}
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Setup Go
