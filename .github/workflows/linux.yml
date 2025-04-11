@@ -132,7 +132,6 @@ jobs:
           find /usr/lib* -name libwebkit2gtkinjectedbundle.so -exec mkdir -p $(dirname '{}') \; -exec cp --parents '{}' "." \; || true
           popd
 
-
           mkdir -p AppDir/usr/share/icons/hicolor/512x512/apps
           build_dir="build/linux/echohush_${{ steps.tag.outputs.tag }}_amd64"
 
@@ -159,7 +158,9 @@ jobs:
         run: mv "echohush_${{ steps.tag.outputs.tag }}_amd64.deb" "echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.deb"
 
       - name: Rename appimage
-        run: mv echohush-${{ steps.normalise_platform_arch.outputs.arch }}.AppImage "echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.AppImage"
+        run: |
+          NameAppImage=$(ls *.AppImage | head -n 1)
+          mv "$NameAppImage" "echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.AppImage"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
