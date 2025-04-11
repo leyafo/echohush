@@ -43,13 +43,8 @@ jobs:
         id: normalise_version
         shell: bash
         run: |
-          if [ "${{ github.event.release.tag_name }}" == "" ]; then
-            version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
-            echo "version=$version" >> "$GITHUB_OUTPUT"
-          else
-            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
-            echo "version=$version" >> "$GITHUB_OUTPUT"
-          fi
+          version=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -60,11 +55,16 @@ jobs:
         shell: bash
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+      - name: Install Act dependencies
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get install sudo -y
+
       - name: Install Ubuntu prerequisites
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libfuse-dev libfuse2
+          sudo apt-get install -y build-essential libgtk-3-dev libwebkit2gtk-4.0-dev libfuse-dev libfuse2
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -111,10 +111,6 @@ jobs:
       - name: Package up deb file
         shell: bash
         run: |
-          ls build/
-          echo '==='
-          ls build/bin
-          echo '==='
           mv build/bin/echohush build/linux/amd64/usr/local/bin/
           cd build/linux
           mv amd64 "echohush_${{ steps.normalise_version.outputs.version }}_amd64"
