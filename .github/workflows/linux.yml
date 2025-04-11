@@ -23,6 +23,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
+      - name: 'Get Previous tag'
+        id: tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 1.0.0 
+
       - name: Normalise platform tag
         id: normalise_platform
         shell: bash
@@ -50,19 +56,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git build-essential libgtk-3-dev libwebkit2gtk-4.0-dev libfuse-dev libfuse2
 
-      - name: get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
-        with:
-          strip_v: true
-
-      - name: Normalise version tag
-        id: normalise_version
-        shell: bash
-        run: |
-          version=${{ steps.tag.outputs.tag }}
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -81,17 +74,17 @@ jobs:
         shell: bash
         run: |
           npm install -g npm@9
-          jq '.info.productVersion = "${{ steps.normalise_version.outputs.version }}"' wails.json > tmp.json
+          jq '.info.productVersion = "${{ steps.tag.outputs.tag }}"' wails.json > tmp.json
           mv tmp.json wails.json
           cd frontend
-          jq '.version = "${{ steps.normalise_version.outputs.version }}"' package.json > tmp.json
+          jq '.version = "${{ steps.tag.outputs.tag }}"' package.json > tmp.json
           mv tmp.json package.json
           npm install
 
       - name: Build wails app for Linux
         shell: bash
         run: |
-          CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} -tags fts5,desktop,production -ldflags "-X echohush/pkg/daemon.RELEASE=${{ steps.normalise_version.outputs.version }} -X echohush/pkg/daemon.COMMIT=git-6d80d50 -X echohush/pkg/daemon.REPO=git@github.com:leyafo/echohush.git -X echohush/pkg/daemon.BUILDTIME=$(date +%Y-%m-%d_%H:%M:%S) -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{ steps.normalise_version.outputs.version }}" -o echohush
+          CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} -tags fts5,desktop,production -ldflags "-X echohush/pkg/daemon.RELEASE=${{ steps.tag.outputs.tag }} -X echohush/pkg/daemon.COMMIT=git-6d80d50 -X echohush/pkg/daemon.REPO=git@github.com:leyafo/echohush.git -X echohush/pkg/daemon.BUILDTIME=$(date +%Y-%m-%d_%H:%M:%S) -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{ steps.tag.outputs.tag }}" -o echohush
 
       - name: Setup control template
         shell: bash
@@ -119,9 +112,9 @@ jobs:
         run: |
           mv build/bin/echohush build/linux/amd64/usr/local/bin/
           cd build/linux
-          mv amd64 "echohush_${{ steps.normalise_version.outputs.version }}_amd64"
-          sed -i 's/0.0.0/${{ steps.normalise_version.outputs.version }}/g' "echohush_${{ steps.normalise_version.outputs.version }}_amd64/DEBIAN/control"
-          dpkg-deb --build -Zxz "echohush_${{ steps.normalise_version.outputs.version }}_amd64"
+          mv amd64 "echohush_${{ steps.tag.outputs.tag }}_amd64"
+          sed -i 's/0.0.0/${{ steps.tag.outputs.tag }}/g' "echohush_${{ steps.tag.outputs.tag }}_amd64/DEBIAN/control"
+          dpkg-deb --build -Zxz "echohush_${{ steps.tag.outputs.tag }}_amd64"
 
       - name: Package up appimage file
         run: |
@@ -141,7 +134,7 @@ jobs:
 
 
           mkdir -p AppDir/usr/share/icons/
-          build_dir="build/linux/echohush_${{ steps.normalise_version.outputs.version }}_amd64"
+          build_dir="build/linux/echohush_${{ steps.tag.outputs.tag }}_amd64"
 
           cp -r $build_dir/usr/share/icons/echohush.png AppDir/usr/share/icons/
           cp $build_dir/usr/local/bin/echohush AppDir/usr/bin/
@@ -164,16 +157,16 @@ jobs:
 
       - name: Rename deb
         working-directory: ./build/linux
-        run: mv "echohush_${{ steps.normalise_version.outputs.version }}_amd64.deb" "echohush_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.deb"
+        run: mv "echohush_${{ steps.tag.outputs.tag }}_amd64.deb" "echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.deb"
 
       - name: Rename appimage
-        run: mv echohush-${{ steps.normalise_platform_arch.outputs.arch }}.AppImage "echohush_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.AppImage"
+        run: mv echohush-${{ steps.normalise_platform_arch.outputs.arch }}.AppImage "echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.AppImage"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.normalise_version.outputs.version }}
+          tag_name: v${{ steps.tag.outputs.tag }}
           files: |
-            ./build/linux/echohush_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.deb
-            echohush_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.AppImage
+            ./build/linux/echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.deb
+            echohush_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.AppImage
           token: ${{ secrets.GITHUB_TOKEN }}
