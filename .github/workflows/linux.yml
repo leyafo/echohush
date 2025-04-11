@@ -133,12 +133,11 @@ jobs:
           popd
 
 
-          mkdir -p AppDir/usr/share/icons/
+          mkdir -p AppDir/usr/share/icons/hicolor/512x512/apps
           build_dir="build/linux/echohush_${{ steps.tag.outputs.tag }}_amd64"
 
-          cp -r $build_dir/usr/share/icons/echohush.png AppDir/usr/share/icons/
+          cp -r $build_dir/usr/share/icons/hicolor/512x512/apps/echohush.png AppDir/usr/share/icons/hicolor/512x512/apps/
           cp $build_dir/usr/local/bin/echohush AppDir/usr/bin/
-
 
           sed -i 's#/usr/local/bin/echohush#echohush#g' $build_dir/usr/share/applications/echohush.desktop
 
