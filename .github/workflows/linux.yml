@@ -23,7 +23,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: 'Get Previous tag'
+      - name: 'Get Latest tag'
         id: tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
