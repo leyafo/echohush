@@ -25,7 +25,8 @@ import {
     emacsStyleKeymap,
     history, 
     historyKeymap,
-    deleteGroupBackward
+    deleteGroupBackward,
+    insertNewline,
 } from "@codemirror/commands"
 
 import * as Query from "../../wailsjs/go/db/FrontQuery";
@@ -132,6 +133,12 @@ export default class extends Controller {
     customKeymap(){
         let self = this
         const km = keymap.of([
+			{
+				key: "Enter", run: (view) => {
+                    insertNewline(view)
+					return false;
+				},
+			},
             { 
                 key: "Escape", run: (view) => { 
                     self.editor.contentDOM.blur();
@@ -238,8 +245,6 @@ export default class extends Controller {
         dom.style.padding = "5px 10px";
         dom.style.backgroundColor = "#f0f0f0";
         dom.style.fontFamily = "monospace";
-        //dom.textContent = `Word count: ${self.countWords(content)}`;
-
 
         // Ensure the panel fits within the editor
         dom.style.width = "100%"; // Full width of the editor
@@ -291,7 +296,6 @@ export default class extends Controller {
                     self.editor.dispatch({
                         selection: EditorSelection.single(newPosition),
                         effects: EditorView.scrollIntoView(newPosition, { y: "center" }),
-
                     });
                 }).catch((err)=>{
                     console.error(err)
