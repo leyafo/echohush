@@ -96,10 +96,8 @@ jobs:
       - name: Rename installer
         working-directory: ./build/bin
         run: |
-          for /f "delims=" %f in ('dir *.exe /b') do (
-            move "%f" "echohush_Setup_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.exe"
-            exit /b
-          )
+          dir
+          move "echohush-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe" "echohush_Setup_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.exe"
         shell: cmd
 
       - name: Upload release asset (Installer)
