@@ -95,14 +95,11 @@ jobs:
 
       - name: Rename installer
         working-directory: ./build/bin
-        run: |
-          dir
-          move "echohush-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe" "echohush_Setup_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.exe"
-        shell: cmd
+        run: Rename-Item -Path "echohush.exe" -NewName "echohush_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe"
 
       - name: Upload release asset (Installer)
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.tag.outputs.tag }}
-          files: ./build/bin/echohush_Setup_${{ steps.tag.outputs.tag }}_${{ steps.normalise_platform.outputs.tag }}.exe
+          files: echohush_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe
           token: ${{ secrets.GITHUB_TOKEN }}
