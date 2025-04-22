@@ -65,7 +65,7 @@ jobs:
       - name: Build wails app for macOS
         shell: bash
         run: |
-          CGO_ENABLED=1 wails build -tags fts5,desktop,production -platform ${{ matrix.platform }} -ldflags "-X echohush/pkg/daemon.COMMIT=${{GITHUB_SHA}} -X echohush/pkg/daemon.REPO=https://github.com/leyafo/echohush -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{steps.normalise_platform.outputs.tag}}" -o echohush
+          CGO_ENABLED=1 wails build -tags fts5,desktop,production -platform ${{ matrix.platform }} -ldflags "-X echohush/pkg/daemon.REPO=https://github.com/leyafo/echohush -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{steps.normalise_platform.outputs.tag}}" -o echohush
 
       - name: Checkout create-image
         uses: actions/checkout@v2
