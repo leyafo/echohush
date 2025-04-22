@@ -31,8 +31,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: 'Get Latest tag'
+        id: tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 1.0.0 
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Build frontend assets
+        shell: bash
+        run: |
+          npm install -g npm@9
+          jq '.info.productVersion = "${{ steps.tag.outputs.tag }}"' wails.json > tmp.json
+          mv tmp.json wails.json
+          cd frontend
+          jq '.version = "${{ steps.tag.outputs.tag }}"' package.json > tmp.json
+          mv tmp.json package.json
+          npm install
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
