@@ -75,7 +75,7 @@ jobs:
       - name: Build Windows portable app
         shell: bash
         run: |
-          CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} -webview2 embed -tags fts5,desktop,production -ldflags "-X echohush/pkg/daemon.RELEASE=${{ steps.tag.outputs.tag }} -X echohush/pkg/daemon.COMMIT=git-6d80d50 -X echohush/pkg/daemon.REPO=git@github.com:leyafo/echohush.git -X echohush/pkg/daemon.BUILDTIME=$(date +%Y-%m-%d_%H:%M:%S) -X echohush/pkg/daemon.SERVICENAME=echohush -X echohush/pkg/daemon.ENV=production -X echohush/pkg/daemon.TAG=${{ steps.tag.outputs.tag }}" 
+          make production
 
       - name: Compress portable binary
         working-directory: ./build/bin
