@@ -18,6 +18,7 @@ jobs:
       matrix:
         platform:
           - darwin/amd64
+          - darwin/amd64
 
     steps:
       - name: Checkout source code
@@ -89,8 +90,6 @@ jobs:
             --icon "echohush.app" 180 180 \
             --hide-extension "echohush.app" \
             --app-drop-link 480 180 \
-            --add-file "Repair" "dmg/fix-app" 230 290 \
-            --add-file "损坏修复" "dmg/fix-app_zh" 430 290 \
             "bin/echohush-${{ steps.normalise_platform.outputs.tag }}.dmg" \
             "bin"
 
