@@ -82,13 +82,15 @@ jobs:
             --no-internet-enable \
             --volname "echohush" \
             --volicon "bin/echohush.app/Contents/Resources/iconfile.icns" \
-            --background "dmg/background.tiff" \
             --text-size 12 \
+            --background "dmg/background.tiff" \
             --window-pos 400 400 \
             --window-size 660 450 \
             --icon-size 80 \
             --icon "echohush.app" 180 180 \
             --hide-extension "echohush.app" \
+            --add-file "Repair" "dmg/fix-app" 230 290 \
+            --add-file "损坏修复" "dmg/fix-app_zh" 430 290 \
             --app-drop-link 480 180 \
             "bin/echohush-${{ steps.normalise_platform.outputs.tag }}.dmg" \
             "bin"
