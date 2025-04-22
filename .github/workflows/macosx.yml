@@ -77,7 +77,6 @@ jobs:
         shell: bash
         working-directory: ./build
         run: |
-          mv bin/echohush.app "bin/echohush.app"
           ./create-dmg/create-dmg \
             --no-internet-enable \
             --volname "echohush" \
